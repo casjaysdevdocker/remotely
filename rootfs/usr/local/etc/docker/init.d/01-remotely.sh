@@ -36,26 +36,36 @@ export PATH="/usr/local/etc/docker/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/s
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SCRIPT_FILE="$0"
 SERVICE_NAME="remotely"
+# Function to exit appropriately based on context
+__script_exit() {
+	local exit_code="${1:-0}"
+	if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
+		# Script is being sourced - use return
+		return "$exit_code"
+	else
+		# Script is being executed - use exit
+		exit "$exit_code"
+	fi
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 SCRIPT_NAME="$(basename "$SCRIPT_FILE" 2>/dev/null)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # exit if __start_init_scripts function hasn't been Initialized
 if [ ! -f "/run/__start_init_scripts.pid" ]; then
-  echo "__start_init_scripts function hasn't been Initialized" >&2
-  SERVICE_IS_RUNNING="no"
-  exit 1
+	echo "__start_init_scripts function hasn't been Initialized" >&2
+	SERVICE_IS_RUNNING="no"
+	__script_exit 1
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # import the functions file
 if [ -f "/usr/local/etc/docker/functions/entrypoint.sh" ]; then
-  . "/usr/local/etc/docker/functions/entrypoint.sh"
+	. "/usr/local/etc/docker/functions/entrypoint.sh"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # import variables
 for set_env in "/root/env.sh" "/usr/local/etc/docker/env"/*.sh "/config/env"/*.sh; do
-  [ -f "$set_env" ] && . "$set_env"
+	[ -f "$set_env" ] && . "$set_env"
 done
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-printf '%s\n' "# - - - Initializing $SERVICE_NAME - - - #"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Script to execute
 START_SCRIPT="/usr/local/etc/docker/exec/$SERVICE_NAME"
@@ -138,10 +148,10 @@ __fix_permissions "$SERVICE_USER" "$SERVICE_GROUP"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Custom setup for remotely
 __update_conf_files() {
-  mkdir -p "$CONF_DIR" "$DATA_DIR"
-  # Create basic remotely config if it doesn't exist
-  if [ ! -f "$CONF_DIR/remotely.conf" ]; then
-    cat <<EOF > "$CONF_DIR/remotely.conf"
+	mkdir -p "$CONF_DIR" "$DATA_DIR"
+	# Create basic remotely config if it doesn't exist
+	if [ ! -f "$CONF_DIR/remotely.conf" ]; then
+		cat <<EOF >"$CONF_DIR/remotely.conf"
 # Remotely configuration
 [server]
 port = $SERVICE_PORT
@@ -149,59 +159,59 @@ host = 0.0.0.0
 data_dir = $DATA_DIR
 
 EOF
-  fi
+	fi
 }
 __update_conf_files
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Start the service using standard pattern
 __run_start_script() {
-  local cmd="$(eval echo "${EXEC_CMD_BIN:-}")"
-  local args="$(eval echo "${EXEC_CMD_ARGS:-}")"
-  local name="$(basename "$cmd")"
-  
-  if [ -z "$cmd" ]; then
-    echo "Initializing $SCRIPT_NAME has completed"
-    exit 0
-  fi
-  
-  if [ ! -x "$cmd" ]; then
-    echo "$name is not a valid executable"
-    return 2
-  fi
-  
-  if __proc_check "$name"; then
-    echo "$name is already running" >&2
-    return 0
-  fi
-  
-  echo "Starting service: $name $args"
-  eval "$cmd $args" 2>>/dev/stderr >>"$LOG_DIR/$SERVICE_NAME.log" &
-  execPid=$!
-  sleep 10
-  checkPID="$(ps ax | awk '{print $1}' | grep -v grep | grep "$execPid$" || false)"
-  
-  if [ -n "$execPid" ] && [ -n "$checkPID" ]; then
-    echo "$execPid" >"$SERVICE_PID_FILE"
-    echo "$cmd has been started"
-    return 0
-  else
-    echo "Failed to start $cmd" >&2
-    return 1
-  fi
+	local cmd="$(eval echo "${EXEC_CMD_BIN:-}")"
+	local args="$(eval echo "${EXEC_CMD_ARGS:-}")"
+	local name="$(basename "$cmd")"
+
+	if [ -z "$cmd" ]; then
+		echo "Initializing $SCRIPT_NAME has completed"
+		exit 0
+	fi
+
+	if [ ! -x "$cmd" ]; then
+		echo "$name is not a valid executable"
+		return 2
+	fi
+
+	if __proc_check "$name"; then
+		echo "$name is already running" >&2
+		return 0
+	fi
+
+	echo "Starting service: $name $args"
+	eval "$cmd $args" 2>>/dev/stderr >>"$LOG_DIR/$SERVICE_NAME.log" &
+	execPid=$!
+	sleep 10
+	checkPID="$(ps ax | awk '{print $1}' | grep -v grep | grep "$execPid$" || false)"
+
+	if [ -n "$execPid" ] && [ -n "$checkPID" ]; then
+		echo "$execPid" >"$SERVICE_PID_FILE"
+		echo "$cmd has been started"
+		return 0
+	else
+		echo "Failed to start $cmd" >&2
+		return 1
+	fi
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __run_start_script
 errorCode=$?
 if [ -n "$EXEC_CMD_BIN" ]; then
-  if [ "$errorCode" -eq 0 ]; then
-    SERVICE_EXIT_CODE=0
-    SERVICE_IS_RUNNING="yes"
-  else
-    SERVICE_EXIT_CODE=$errorCode
-    SERVICE_IS_RUNNING="no"
-    [ -s "$SERVICE_PID_FILE" ] || rm -Rf "$SERVICE_PID_FILE"
-  fi
+	if [ "$errorCode" -eq 0 ]; then
+		SERVICE_EXIT_CODE=0
+		SERVICE_IS_RUNNING="yes"
+	else
+		SERVICE_EXIT_CODE=$errorCode
+		SERVICE_IS_RUNNING="no"
+		[ -s "$SERVICE_PID_FILE" ] || rm -Rf "$SERVICE_PID_FILE"
+	fi
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 echo "Initializing of $SERVICE_NAME has completed with statusCode: $SERVICE_EXIT_CODE"
-exit $SERVICE_EXIT_CODE
+__script_exit $SERVICE_EXIT_CODE
