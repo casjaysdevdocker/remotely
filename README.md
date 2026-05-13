@@ -19,17 +19,18 @@ dockermgr update remotely
 ## Install and run container
   
 ```shell
-mkdir -p "$HOME/.local/share/srv/docker/remotely/volumes"
+dockerHome="/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs"
+mkdir -p "/var/lib/srv/$USER/docker/remotely/rootfs"
 git clone "https://github.com/dockermgr/remotely" "$HOME/.local/share/CasjaysDev/dockermgr/remotely"
-cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/remotely/rootfs/." "$HOME/.local/share/srv/docker/remotely/volumes/"
+cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/remotely/rootfs/." "$dockerHome/"
 docker run -d \
 --restart always \
 --privileged \
---name casjaysdevdocker-remotely \
+--name casjaysdevdocker-remotely-latest \
 --hostname remotely \
 -e TZ=${TIMEZONE:-America/New_York} \
--v "$HOME/.local/share/srv/docker/casjaysdevdocker-remotely/volumes/data:/data:z" \
--v "$HOME/.local/share/srv/docker/casjaysdevdocker-remotely/volumes/config:/config:z" \
+-v "$dockerHome/data:/data:z" \
+-v "$dockerHome/config:/config:z" \
 -p 80:80 \
 casjaysdevdocker/remotely:latest
 ```
@@ -46,8 +47,8 @@ services:
       - TZ=America/New_York
       - HOSTNAME=remotely
     volumes:
-      - "$HOME/.local/share/srv/docker/casjaysdevdocker-remotely/volumes/data:/data:z"
-      - "$HOME/.local/share/srv/docker/casjaysdevdocker-remotely/volumes/config:/config:z"
+      - "/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/data:/data:z"
+      - "/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/config:/config:z"
     ports:
       - 80:80
     restart: always
