@@ -48,7 +48,7 @@ __script_exit() {
 	fi
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SCRIPT_NAME="$(basename "$SCRIPT_FILE" 2>/dev/null)"
+SCRIPT_NAME="${SCRIPT_FILE##*/}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # exit if __start_init_scripts function hasn't been Initialized
 if [ ! -f "/run/.start_init_scripts.pid" ]; then
@@ -71,15 +71,20 @@ done
 START_SCRIPT="/usr/local/etc/docker/exec/$SERVICE_NAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Default predefined variables
-DATA_DIR="/data/nginx"   # set data directory
-CONF_DIR="/config/nginx" # set config directory
+# set data directory
+DATA_DIR="/data/nginx"
+# set config directory
+CONF_DIR="/config/nginx"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # set the containers etc directory
 ETC_DIR="/etc/nginx"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TMP_DIR="/tmp/nginx"       # set the temp dir
-RUN_DIR="/run/nginx"       # set scripts pid dir
-LOG_DIR="/data/logs/nginx" # set log directory
+# set the temp dir
+TMP_DIR="/tmp/nginx"
+# set scripts pid dir
+RUN_DIR="/run/nginx"
+# set log directory
+LOG_DIR="/data/logs/nginx"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # port which service is listening on
 SERVICE_PORT="80"
@@ -105,7 +110,7 @@ APPLICATION_DIRS="$RUN_DIR $ETC_DIR $CONF_DIR $LOG_DIR $TMP_DIR"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Standard service initialization
 SERVICE_EXIT_CODE=0
-EXEC_CMD_NAME="$(basename "$EXEC_CMD_BIN")"
+EXEC_CMD_NAME="${EXEC_CMD_BIN##*/}"
 SERVICE_PID_FILE="/run/init.d/$EXEC_CMD_NAME.pid"
 SERVICE_PID_NUMBER="$(__pgrep)"
 EXEC_CMD_BIN="$(type -P "$EXEC_CMD_BIN" || echo "$EXEC_CMD_BIN")"
@@ -132,7 +137,7 @@ __fix_permissions "$SERVICE_USER" "$SERVICE_GROUP"
 __run_start_script() {
 	local cmd="$(eval echo "${EXEC_CMD_BIN:-}")"
 	local args="$(eval echo "${EXEC_CMD_ARGS:-}")"
-	local name="$(basename "$cmd")"
+	local name="${cmd##*/}"
 
 	if [ -z "$cmd" ]; then
 		echo "Initializing $SCRIPT_NAME has completed"

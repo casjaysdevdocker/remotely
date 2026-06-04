@@ -48,7 +48,7 @@ __script_exit() {
 	fi
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SCRIPT_NAME="$(basename "$SCRIPT_FILE" 2>/dev/null)"
+SCRIPT_NAME="${SCRIPT_FILE##*/}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # exit if __start_init_scripts function hasn't been Initialized
 if [ ! -f "/run/.start_init_scripts.pid" ]; then
@@ -74,15 +74,20 @@ START_SCRIPT="/usr/local/etc/docker/exec/$SERVICE_NAME"
 RESET_ENV="no"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Default predefined variables
-DATA_DIR="/data/remotely"   # set data directory
-CONF_DIR="/config/remotely" # set config directory
+# set data directory
+DATA_DIR="/data/remotely"
+# set config directory
+CONF_DIR="/config/remotely"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # set the containers etc directory
 ETC_DIR="/etc/remotely"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TMP_DIR="/tmp/remotely"       # set the temp dir
-RUN_DIR="/run/remotely"       # set scripts pid dir
-LOG_DIR="/data/logs/remotely" # set log directory
+# set the temp dir
+TMP_DIR="/tmp/remotely"
+# set scripts pid dir
+RUN_DIR="/run/remotely"
+# set log directory
+LOG_DIR="/data/logs/remotely"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # port which service is listening on
 SERVICE_PORT="5000"
@@ -121,7 +126,7 @@ APPLICATION_DIRS="$RUN_DIR $ETC_DIR $CONF_DIR $LOG_DIR $TMP_DIR"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Standard service initialization follows the same pattern as other repos
 SERVICE_EXIT_CODE=0
-EXEC_CMD_NAME="$(basename "$EXEC_CMD_BIN")"
+EXEC_CMD_NAME="${EXEC_CMD_BIN##*/}"
 SERVICE_PID_FILE="/run/init.d/$EXEC_CMD_NAME.pid"
 SERVICE_PID_NUMBER="$(__pgrep)"
 EXEC_CMD_BIN="$(type -P "$EXEC_CMD_BIN" || echo "$EXEC_CMD_BIN")"
@@ -167,7 +172,7 @@ __update_conf_files
 __run_start_script() {
 	local cmd="$(eval echo "${EXEC_CMD_BIN:-}")"
 	local args="$(eval echo "${EXEC_CMD_ARGS:-}")"
-	local name="$(basename "$cmd")"
+	local name="${cmd##*/}"
 
 	if [ -z "$cmd" ]; then
 		echo "Initializing $SCRIPT_NAME has completed"
