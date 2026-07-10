@@ -19,8 +19,8 @@ dockermgr update remotely
 ## Install and run container
   
 ```shell
-dockerHome="/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs"
-mkdir -p "/var/lib/srv/$USER/docker/remotely/rootfs"
+dockerHome="/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs"
+mkdir -p "/srv/$USER/docker/remotely/rootfs"
 git clone "https://github.com/dockermgr/remotely" "$HOME/.local/share/CasjaysDev/dockermgr/remotely"
 cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/remotely/rootfs/." "$dockerHome/"
 docker run -d \
@@ -47,8 +47,8 @@ services:
       - TZ=America/New_York
       - HOSTNAME=remotely
     volumes:
-      - "/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/data:/data:z"
-      - "/var/lib/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/config:/config:z"
+      - "/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/data:/data:z"
+      - "/srv/$USER/docker/casjaysdevdocker/remotely/remotely/latest/rootfs/config:/config:z"
     ports:
       - 80:80
     restart: always
